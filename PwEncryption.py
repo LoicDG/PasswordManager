@@ -1,16 +1,12 @@
 from cryptography.fernet import Fernet
+key = Fernet.generate_key()
+fernet = Fernet(key)
 
-class PwEncryption:
-    def __init__(self, pw):
-        self.key = Fernet.generate_key()
-        self.fernet = Fernet(self.key)
-        self.pw = pw
+def encrypt(pw):
+    return fernet.encrypt(pw.encode())
 
-    def encrypt(self):
-        return self.fernet.encrypt(self.pw.encode())
+def decrypt(encoded_msg):
+    return fernet.decrypt(encoded_msg).decode()
 
-    def decrypt(self, encoded_msg):
-        return self.fernet.decrypt(encoded_msg).decode()
-
-    def get_key(self):
-        return self.key
+def get_key():
+    return key
