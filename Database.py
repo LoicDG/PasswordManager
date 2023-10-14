@@ -63,7 +63,9 @@ def createUser(cur, conn):
     cur.execute('''INSERT INTO users (username, pw, EncryptKey) VALUES (?, ?, ?) 
                                 ''', (usrn, pw, key))
     conn.commit()
-    return key
+    cur.execute('''SELECT user_id FROM users WHERE username == ?''', (usrn,))
+    user_id = cur.fetchone()[0]
+    return key, user_id
 
 
 def signIn(cur):
@@ -91,18 +93,20 @@ def signIn(cur):
     if tries == 3:
         print("Too many tries, the password manager will now close")
         sys.exit()
-    return encryptKey
+    cur.execute('''SELECT user_id FROM users WHERE username == ?''', (usrn,))
+    user_id = cur.fetchone()[0]
+    return encryptKey, user_id
 
 
 def choisirOption(conn, cur):
     menu()
     choix = input()
     if choix == "1":
-        encryptKey = createUser(cur, conn)
-        choisirQuoiFaire(encryptKey)
+        encryptKey, user_id = createUser(cur, conn)
+        choisirQuoiFaire(user_id, encryptKey, conn, cur)
     elif choix == "2":
-        encryptKey = signIn(cur)
-        choisirQuoiFaire(encryptKey)
+        encryptKey, user_id = signIn(cur)
+        choisirQuoiFaire(user_id, encryptKey, conn, cur)
     elif choix == "3":
         cur.close()
         conn.close()
@@ -112,15 +116,22 @@ def choisirOption(conn, cur):
         choisirOption(conn, cur)
 
 
-def choisirQuoiFaire(key):
+def choisirQuoiFaire(user_id, key, conn, cur):
     menuPw()
     choix = input()
     if choix == "1":
-        pass
+        site = input("For what site do you want to create a password: ")
+        name = input("What is the username used for this website: ")
+        pw = input("Please enter a password for this website: ")
+        pw = PwEncryption.encrypt(key, pw)
+        cur.execute('''INSERT INTO endpass (user_id, site, username, password) VALUES(?,?,?,?)''',
+                    (user_id, site, name, pw))
+        conn.commit()
+        print("Your password has been saved!")
     elif choix == "2":
         pass
     elif choix == "3":
         pass
     else:
         print("Please enter a valid option")
-        choisirQuoiFaire(key)
+        choisirQuoiFaire(user_id, key, conn, cur)
