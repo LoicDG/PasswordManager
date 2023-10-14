@@ -1,8 +1,10 @@
 import sqlite3
 import sys
+import PwEncryption
 
 from cryptography.fernet import Fernet
 from sys import exit
+
 
 def creerDatabase(nomDB):
     conn = sqlite3.connect(nomDB)
@@ -32,8 +34,6 @@ def connect(nomDB):
     choisirOption(conn, cur)
 
 
-
-
 def menu():
     print("-" * 15)
     print('''1. Create account\n2. Sign in\n3. Quit''')
@@ -41,10 +41,10 @@ def menu():
 
 
 def menuPw():
-    print("-"*15)
+    print("-" * 15)
     print("Choose an option:")
     print("1. Add a new password\n2. Get an existing password\n3. Quit")
-    print("-"*15)
+    print("-" * 15)
 
 
 def createUser(cur, conn):
@@ -65,6 +65,7 @@ def createUser(cur, conn):
     conn.commit()
     return key
 
+
 def signIn(cur):
     exists = 0
     while exists != 1:
@@ -78,7 +79,7 @@ def signIn(cur):
             print("This user does not exist")
     cur.execute('''SELECT pw, EncryptKey FROM users WHERE username == ? ''',
                 (usrn,))
-    pw, EncryptKey = cur.fetchmany(1)[0]
+    pw, encryptKey = cur.fetchmany(1)[0]
     password = ""
     tries = 0
     while password != pw and tries < 3:
@@ -90,18 +91,18 @@ def signIn(cur):
     if tries == 3:
         print("Too many tries, the password manager will now close")
         sys.exit()
-    return EncryptKey
+    return encryptKey
 
 
 def choisirOption(conn, cur):
     menu()
     choix = input()
     if choix == "1":
-        EncryptKey = createUser(cur, conn)
-        menuPw()
+        encryptKey = createUser(cur, conn)
+        choisirQuoiFaire(encryptKey)
     elif choix == "2":
-        EncryptKey = signIn(cur)
-        menuPw()
+        encryptKey = signIn(cur)
+        choisirQuoiFaire(encryptKey)
     elif choix == "3":
         cur.close()
         conn.close()
@@ -109,3 +110,17 @@ def choisirOption(conn, cur):
     else:
         print("Please enter a valid option")
         choisirOption(conn, cur)
+
+
+def choisirQuoiFaire(key):
+    menuPw()
+    choix = input()
+    if choix == "1":
+        pass
+    elif choix == "2":
+        pass
+    elif choix == "3":
+        pass
+    else:
+        print("Please enter a valid option")
+        choisirQuoiFaire(key)
