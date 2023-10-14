@@ -1,4 +1,5 @@
 import sqlite3
+from cryptography.fernet import Fernet
 
 
 def creerDatabase(nomDB):
@@ -30,9 +31,19 @@ def connect(nomDB):
     print('''1. Create account\n2. Sign in''')
     print("-" * 15)
     if choix := input() == 1:
-        usrn = input("Please create a username: ")
+        exists = 1
+        while exists == 1:
+            usrn = input("Please create a username: ")
+            cur.execute('''SELECT EXISTS(SELECT * FROM users WHERE users == ?)''',
+                        (usrn,))
+            exists = cur.fetchone()[0]
+            if exists == 1:
+                print("This user already exists")
         pw = input("Please create your master password: ")
-        cur.execute('''INSERT INTO users (users, pw)''')
+        key = Fernet.generate_key()
+        cur.executemany('''INSERT INTO users (users, pw, EncryptKey) VALUES (?, ?, ?) 
+                            ''', (usrn, pw, key))
+        conn.commit()
     elif choix == 2:
         pass
     else:
