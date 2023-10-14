@@ -1,7 +1,6 @@
 import sqlite3
 from cryptography.fernet import Fernet
 
-
 def creerDatabase(nomDB):
     conn = sqlite3.connect(nomDB)
     cur = conn.cursor()
@@ -13,11 +12,11 @@ def creerDatabase(nomDB):
     conn.commit()
     cur.execute('''CREATE TABLE IF NOT EXISTS endpass (
                     password_id INTEGER PRIMARY KEY,
-                    user_id INTEGER FOREIGN KEY,
+                    user_id INTEGER,
                     site TEXT,
                     username TEXT,
                     password TEXT,
-                    FOREIGN KEY user_id REFERENCES users (user_id))''')
+                    FOREIGN KEY (user_id) REFERENCES users (user_id))''')
     conn.commit()
     cur.close()
     conn.close()
@@ -30,9 +29,9 @@ def connect(nomDB):
     print("-" * 15)
     print('''1. Create account\n2. Sign in''')
     print("-" * 15)
-    if choix := input() == 1:
+    if choix := input() == "1":
         exists = 1
-        while exists == 1:
+        while exists != 0:
             usrn = input("Please create a username: ")
             cur.execute('''SELECT EXISTS(SELECT * FROM users WHERE users == ?)''',
                         (usrn,))
@@ -41,10 +40,12 @@ def connect(nomDB):
                 print("This user already exists")
         pw = input("Please create your master password: ")
         key = Fernet.generate_key()
-        cur.executemany('''INSERT INTO users (users, pw, EncryptKey) VALUES (?, ?, ?) 
+        cur.execute('''INSERT INTO users (users, pw, EncryptKey) VALUES (?, ?, ?) 
                             ''', (usrn, pw, key))
         conn.commit()
-    elif choix == 2:
+        cur.close()
+        conn.close()
+    elif choix == "2":
         pass
     else:
         pass
