@@ -6,6 +6,7 @@ from PwHashing import hash_pass
 
 from cryptography.fernet import Fernet
 from sys import exit
+from time import sleep
 
 
 def launch(nomDB):
@@ -54,7 +55,7 @@ def menuPw():
     print("Choose an option:")
     print("1. Add a new password\n"
           "2. Get an existing password\n"
-          "3. See what websites are associated with a password\n"
+          "3. Delete a password\n"
           "4. Quit")
     print("-" * 15)
 
@@ -158,6 +159,7 @@ def choisirQuoiFaire(user_id, key, conn, cur):
                     user_id == ? AND username == ? AND site ==?''', (newPw, user_id, name, site))
                     conn.commit()
                     print("Your password has been updated!")
+                    sleep(2)
                     break
                 elif yesNo == "N":
                     break
@@ -170,51 +172,103 @@ def choisirQuoiFaire(user_id, key, conn, cur):
                         (user_id, site, name, pw))
             conn.commit()
             print("Your password has been saved!")
+            sleep(2)
 
     elif choix == "2":
-        site = input("What site do you want to get the password to?: ")
-        site = site.lower().capitalize()
-        cur.execute('''SELECT EXISTS(SELECT * FROM endpass WHERE site == ?)''', (site.capitalize(),))
-        exists = cur.fetchone()[0]
-        if exists == 0:
-            print("There is no password associated with " + site)
+        listUsers, site = getWebsites(cur, user_id, "What site do you want to get the password to?\n")
+        if listUsers is None:
+            print("There are no passwords yet")
+            sleep(2.5)
+            choisirQuoiFaire(user_id, key, conn, cur)
+        print("Website: " + site)
+        print("Username: Password")
+        index = 1
+        nbUsers = len(listUsers)
+        for entry in range(len(listUsers)):
+            listUsers[entry] = list(listUsers[entry])
+            listUsers[entry][1] = PwEncryption.decrypt(key, listUsers[entry][1])
+            print(str(index) + ". " + listUsers[entry][0] + ": " + listUsers[entry][1])
+            index = index + 1
+        doCopy = input("If you want to copy a password to your clipboard enter the corresponding number, or press "
+                       "enter to continue\n")
+        try:
+            doCopy = int(doCopy)
+        except ValueError:
+            pass
         else:
-            cur.execute("SELECT username, password FROM endpass WHERE site == ? AND user_id == ?", (site, user_id))
-            listSites = cur.fetchall()
-            print("Username: Password")
-            index = 1
-            nbUsers = len(listSites)
-            for entry in range(len(listSites)):
-                listSites[entry] = list(listSites[entry])
-                listSites[entry][1] = PwEncryption.decrypt(key, listSites[entry][1])
-                print(str(index) + ". " + listSites[entry][0] + ": " + listSites[entry][1])
-                index = index + 1
-            number = False
-            while not number and nbUsers != 0:
-                copy = input("Select the password you want to copy to clipboard: ")
-                try:
-                    copy = int(copy)
-                except ValueError:
-                    print("Please enter a number from 1 to " + str(nbUsers))
-                else:
-                    if 0 < copy <= nbUsers:
-                        ctrlc(str(listSites[copy-1][1]))
-                        print("The password has been copied to clipboard!")
-                        number = True
-                    else:
-                        print("Please enter a value between 1 and " + str(nbUsers))
+            if 0 < doCopy <= nbUsers:
+                ctrlc(str(listUsers[doCopy - 1][1]))
+                print("The password has been copied to your clipboard!")
+                sleep(2.5)
+            else:
+                pass
 
     elif choix == "3":
-        cur.execute('''SELECT site FROM endpass WHERE user_id == ?''', (user_id,))
-        listSite = set(cur.fetchall())
-        print("Sites:") if len(listSite) != 0 else print("There are no website currently associated")
-        for i in listSite:
-            print(i[0])
+        listUsers, site = getWebsites(cur, user_id, "From what website do you want to delete a password?\n")
+        if listUsers is None:
+            print("There are no passwords to delete")
+            sleep(2)
+            choisirQuoiFaire(user_id, key, conn, cur)
+        nbUsers = len(listUsers)
+        print("Website: " + site)
+        index = 1
+        print("Users:")
+        for i in listUsers:
+            print(str(index) + ". " + i[0])
+        doCopy = input("Select the user you want to delete, or press enter to continue\n")
+        try:
+            doCopy = int(doCopy)
+        except ValueError:
+            pass
+        else:
+            if 0 < doCopy <= nbUsers:
+                confirm = input("Are you sure? Y/N\n")
+                if confirm == "Y":
+                    username = listUsers[doCopy-1][0]
+                    cur.execute('''DELETE FROM endpass WHERE user_id == ? AND site == ? AND username == ?''',
+                                (user_id, site, username))
+                    conn.commit()
+                    print("Your password has been successfully deleted!")
+                    sleep(2.5)
+                elif confirm == "N":
+                    pass
     elif choix == "4":
         sys.exit()
     else:
         print("Please enter a valid option")
-    leave = input("Press any key to continue or enter quit to exit...\n")
-    if leave == "quit":
-        sys.exit()
+        sleep(2)
     choisirQuoiFaire(user_id, key, conn, cur)
+
+
+def getWebsites(cur, user_id, request):
+    cur.execute('''SELECT site FROM endpass WHERE user_id == ?''', (user_id,))
+    listSites = cur.fetchall()
+    nbSites = len(listSites)
+    if nbSites == 1:
+        site = listSites[0][0]
+    elif nbSites == 0:
+        return None, None
+    else:
+        sites = "Websites:\n"
+        index = 1
+        for i in range(len(listSites)):
+            sites += str(index) + ". " + listSites[i][0] + "\n"
+            index = index + 1
+        number = False
+        while not number:
+            print(sites)
+            site = input(request)
+            try:
+                site = int(site)
+            except ValueError:
+                print("Please enter a number between 1 and " + str(nbSites))
+                sleep(2)
+            else:
+                if 0 < site <= nbSites:
+                    site = listSites[site - 1][0]
+                    number = True
+                else:
+                    print("Please enter a number between 1 and " + str(nbSites))
+                    sleep(2)
+    cur.execute("SELECT username, password FROM endpass WHERE site == ? AND user_id == ?", (site, user_id))
+    return cur.fetchall(), site
