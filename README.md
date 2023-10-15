@@ -12,4 +12,5 @@
     python MainCLI.py "PwManager.db"
 
   assurez vous d'avoir python 3.7+ d'installé
+  
   voici le lien du site officiel de Python: https://www.python.org/
