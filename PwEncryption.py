@@ -7,3 +7,4 @@ def encrypt(key, pw):
 
 def decrypt(key, encoded_msg):
     return Fernet(key).decrypt(encoded_msg).decode()
+
