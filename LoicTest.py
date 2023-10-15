@@ -1,6 +1,13 @@
 from Database import launch
-
-launch("PwManager")
-
+import argparse
 
 
+def main():
+    parser = argparse.ArgumentParser(description= "Password Manager Application")
+    parser.add_argument("database", help= "path to the database file")
+    args = parser.parse_args()
+    launch(args.database)
+
+
+if __name__ == "__main__":
+    main()
