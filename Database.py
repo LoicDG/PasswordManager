@@ -2,6 +2,7 @@ import sqlite3
 import sys
 import PwEncryption
 from pyperclip import copy as ctrlc
+from PwHashing import hash_pass
 
 from cryptography.fernet import Fernet
 from sys import exit
@@ -70,6 +71,7 @@ def createUser(cur, conn):
         if exists == 1:
             print("This user already exists")
     pw = input("Please create your master password: ")
+    pw = hash_pass(pw.encode())
     key = Fernet.generate_key()
     cur.execute('''INSERT INTO users (username, pw, EncryptKey) VALUES (?, ?, ?) 
                                 ''', (usrn, pw, key))
@@ -97,6 +99,7 @@ def signIn(cur):
     tries = 0
     while password != pw and tries < 3:
         password = input("Enter your password: ")
+        password = hash_pass(password.encode())
         if password != pw:
             if tries < 2:
                 print("Password incorrect, please try again")
