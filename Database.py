@@ -74,6 +74,7 @@ def createUser(cur, conn):
         exists = cur.fetchone()[0]
         if exists == 1:
             print("This user already exists")
+            sleep(2)
     pw = input("Please create your master password: ")
     pw = hash_pass(pw.encode())
     key = Fernet.generate_key()
@@ -99,7 +100,8 @@ def signIn(cur, conn):
             changeMind = input("This user does not exist, if you want to create an new account please enter 'create'"
                                "or press enter to try again to exit\n")
             if changeMind == "create":
-                createUser(cur, conn)
+                return createUser(cur, conn)
+
 
     cur.execute('''SELECT pw, EncryptKey FROM users WHERE username == ? ''',
                 (usrn,))
@@ -222,6 +224,7 @@ def menuPassword(user_id, key, conn, cur):
         print("Users:")
         for i in listUsers:
             print(str(index) + ". " + i[0])
+            index = index + 1
         doCopy = input("Select the user you want to delete, or press enter to continue\n")
         try:
             doCopy = int(doCopy)
