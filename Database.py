@@ -1,9 +1,15 @@
 import sqlite3
 import sys
 import PwEncryption
+from pyperclip import copy as ctrlc
 
 from cryptography.fernet import Fernet
 from sys import exit
+
+
+def launch(nomDB):
+    creerDatabase(nomDB)
+    connect(nomDB)
 
 
 def creerDatabase(nomDB):
@@ -36,14 +42,19 @@ def connect(nomDB):
 
 def menu():
     print("-" * 15)
-    print('''1. Create account\n2. Sign in\n3. Quit''')
+    print("1. Create account\n"
+          "2. Sign in\n"
+          "3. Quit")
     print("-" * 15)
 
 
 def menuPw():
     print("-" * 15)
     print("Choose an option:")
-    print("1. Add a new password\n2. Get an existing password\n3. Quit")
+    print("1. Add a new password\n"
+          "2. Get an existing password\n"
+          "3. See what websites are associated with a password\n"
+          "4. Quit")
     print("-" * 15)
 
 
@@ -121,17 +132,80 @@ def choisirQuoiFaire(user_id, key, conn, cur):
     choix = input()
     if choix == "1":
         site = input("For what site do you want to create a password: ")
+        site = site.lower().capitalize()
         name = input("What is the username used for this website: ")
-        pw = input("Please enter a password for this website: ")
-        pw = PwEncryption.encrypt(key, pw)
-        cur.execute('''INSERT INTO endpass (user_id, site, username, password) VALUES(?,?,?,?)''',
-                    (user_id, site, name, pw))
-        conn.commit()
-        print("Your password has been saved!")
+
+        cur.execute('''SELECT EXISTS(SELECT * FROM endpass WHERE user_id == ? AND username == ? AND site ==?)''',
+                    (user_id, name, site))
+        exists = cur.fetchone()[0]
+        if exists == 1:
+            yesNo = input("A password exists already for this site and this username, "
+                          "do you want to change it?\nY/N >>")
+            while yesNo != "Y" or yesNo != "N":
+                if yesNo == "Y":
+                    newPw = input("Please enter your new password: ")
+                    newPw = PwEncryption.encrypt(key, newPw)
+                    cur.execute('''UPDATE endpass SET password == ? WHERE 
+                    user_id == ? AND username == ? AND site ==?''', (newPw, user_id, name, site))
+                    conn.commit()
+                    print("Your password has been updated!")
+                    break
+                elif yesNo == "N":
+                    break
+                else:
+                    print("Please type Y or N to confirm your choice")
+        else:
+            pw = input("Please enter a password for this website: ")
+            pw = PwEncryption.encrypt(key, pw)
+            cur.execute('''INSERT INTO endpass (user_id, site, username, password) VALUES(?,?,?,?)''',
+                        (user_id, site, name, pw))
+            conn.commit()
+            print("Your password has been saved!")
+
     elif choix == "2":
-        pass
+        site = input("What site do you want to get the password to?: ")
+        site = site.lower().capitalize()
+        cur.execute('''SELECT EXISTS(SELECT * FROM endpass WHERE site == ?)''', (site.capitalize(),))
+        exists = cur.fetchone()[0]
+        if exists == 0:
+            print("There is no password associated with " + site)
+        else:
+            cur.execute("SELECT username, password FROM endpass WHERE site == ? AND user_id == ?", (site, user_id))
+            listSites = cur.fetchall()
+            print("Username: Password")
+            index = 1
+            nbUsers = len(listSites)
+            for entry in range(len(listSites)):
+                listSites[entry] = list(listSites[entry])
+                listSites[entry][1] = PwEncryption.decrypt(key, listSites[entry][1])
+                print(str(index) + ". " + listSites[entry][0] + ": " + listSites[entry][1])
+                index = index + 1
+            number = False
+            while not number and nbUsers != 0:
+                copy = input("Select the password you want to copy to clipboard: ")
+                try:
+                    copy = int(copy)
+                except ValueError:
+                    print("Please enter a number from 1 to " + str(nbUsers))
+                else:
+                    if 0 < copy <= nbUsers:
+                        ctrlc(str(listSites[copy-1][1]))
+                        print("The password has been copied to clipboard!")
+                        number = True
+                    else:
+                        print("Please enter a value between 1 and " + str(nbUsers))
+
     elif choix == "3":
-        pass
+        cur.execute('''SELECT site FROM endpass WHERE user_id == ?''', (user_id,))
+        listSite = set(cur.fetchall())
+        print("Sites:") if len(listSite) != 0 else print("There are no website currently associated")
+        for i in listSite:
+            print(i[0])
+    elif choix == "4":
+        sys.exit()
     else:
         print("Please enter a valid option")
-        choisirQuoiFaire(user_id, key, conn, cur)
+    leave = input("Press any key to continue or enter quit to exit...\n")
+    if leave == "quit":
+        sys.exit()
+    choisirQuoiFaire(user_id, key, conn, cur)
