@@ -91,9 +91,12 @@ def signIn(cur, conn):
                     (usrn,))
         exists = cur.fetchone()[0]
         if exists == 0:
-            changeMind = input("This user does not exist, if you want to create an new account please enter 'create'\n")
+            changeMind = input("This user does not exist, if you want to create an new account please enter 'create'"
+                               "or 'quit' to exit\n")
             if changeMind == "create":
                 createUser(cur, conn)
+            elif changeMind == "quit":
+                sys.exit()
 
     cur.execute('''SELECT pw, EncryptKey FROM users WHERE username == ? ''',
                 (usrn,))
