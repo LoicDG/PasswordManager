@@ -14,3 +14,5 @@
   assurez vous d'avoir python 3.7+ d'installé
   
   voici le lien du site officiel de Python: https://www.python.org/
+
+  Ce projet a été réalisé dans le cadre du GeekFest 2023, organisé par Bell
