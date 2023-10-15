@@ -1,6 +1,6 @@
-import Database
+from Database import launch
 
-Database.creerDatabase("PwManager")
-Database.connect("PwManager")
+launch("PwManager")
+
 
 
