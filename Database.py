@@ -81,7 +81,7 @@ def createUser(cur, conn):
     return key, user_id
 
 
-def signIn(cur):
+def signIn(cur, conn):
     exists = 0
     while exists != 1:
         usrn = input("Please enter your username or enter 'quit' to exit: ")
@@ -91,7 +91,13 @@ def signIn(cur):
                     (usrn,))
         exists = cur.fetchone()[0]
         if exists == 0:
-            print("This user does not exist")
+            changeMind = input("This user does not exist, if you want to create an new account please enter 'create'"
+                               "or 'quit' to exit\n")
+            if changeMind == "create":
+                createUser(cur, conn)
+            elif changeMind == "quit":
+                sys.exit()
+
     cur.execute('''SELECT pw, EncryptKey FROM users WHERE username == ? ''',
                 (usrn,))
     pw, encryptKey = cur.fetchmany(1)[0]
@@ -119,7 +125,7 @@ def choisirOption(conn, cur):
         encryptKey, user_id = createUser(cur, conn)
         choisirQuoiFaire(user_id, encryptKey, conn, cur)
     elif choix == "2":
-        encryptKey, user_id = signIn(cur)
+        encryptKey, user_id = signIn(cur, conn)
         choisirQuoiFaire(user_id, encryptKey, conn, cur)
     elif choix == "3":
         cur.close()
