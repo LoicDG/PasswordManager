@@ -1,8 +1,11 @@
 import tkinter
 from tkinter import *
+from DatabaseSonia import *
 
 class GUI:
     def __init__(self, win):
+        launch()
+        connect()  # CONNECT
         self.win = win
         self.win.geometry("400x400")
         self.win.title("Bloc Buddies Password Manager")
@@ -11,6 +14,9 @@ class GUI:
         self.create_main_menu() #0
         self.create_account() #1
         self.create_sign_in() #2
+        self.succes() #3
+
+        #self.create
 
         self.frames[0].tkraise() #Show main menu on start
 
@@ -25,6 +31,10 @@ class GUI:
                   font=12
                   )
         titre.pack()
+
+    def create_master_account(self, user, pw):
+        print("Account creation worked!", user, pw) #TODO: To remove
+        createAccount(user, pw)
 
     def create_main_menu(self):
         frame = Frame(self.win)
@@ -54,11 +64,18 @@ class GUI:
 
         create_master_pass = Label(frame, text="Create your master password: ")
         create_master_pass.pack()
-        create_account_master_pass_entry = Entry(frame, show="*")
-        create_account_master_pass_entry.pack()
+        create_master_pass_entry = Entry(frame, show="*")
+        create_master_pass_entry.pack()
 
-        create_account_button = Button(frame, text="Submit")
+        create_account_button = Button(frame,
+                                       text="Submit",
+                                       command=lambda: (self.switch_frame(frame, self.frames[3]),
+                                                        self.create_master_account(create_new_user_entry.get(),
+                                                                                   create_master_pass_entry.get())))
         create_account_button.pack()
+
+        quit_btn = Button(frame, text="Quit")
+        quit_btn.pack()
 
         self.frames[1] = frame
 
@@ -67,7 +84,25 @@ class GUI:
         frame.grid(row=0, column=0, sticky="nsew")
         self.afficher_titre(frame)
 
+        quit_btn = Button(frame, text="Quit")
+        quit_btn.pack()
+
         self.frames[2] = frame
+
+    def succes(self):
+        frame = Frame(self.win)
+        frame.grid(row=0, column=0, sticky="nsew")
+        self.afficher_titre(frame)
+        succes = Label(frame, text="Nous avons réussi l'opération!")
+        succes.pack()
+
+        menu_btn = Button(frame, text="Revenir au menu")
+        menu_btn.pack()
+
+        quit_btn = Button(frame, text="Quit")
+        quit_btn.pack()
+
+        self.frames[3] = frame
 
     def run(self):
         self.win.mainloop()
