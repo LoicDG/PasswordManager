@@ -1,7 +1,9 @@
 from tkinter import *
 def send():
+    site = website_entry.get()
     user = user_entry.get()
     pw = pw_entry.get()
+    print("This is the site: ", site)
     print("This is the user: ", user)
     print("This is the pass: ", pw)
 
@@ -16,6 +18,13 @@ titre = Label(window,
               font=12
               )
 titre.pack()
+
+# ----- WEBSITE ENTRY -----
+website_label = Label(window, text="Site: ")
+website_label.pack()
+
+website_entry = Entry(window)
+website_entry.pack()
 
 # ----- USER ENTRY -----
 user_label = Label(window, text="Utilisateur: ")
