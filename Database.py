@@ -7,6 +7,7 @@ from PwHashing import hash_pass
 from cryptography.fernet import Fernet
 from sys import exit
 from time import sleep
+from os import system
 
 
 def launch(nomDB):
@@ -39,10 +40,10 @@ def connect(nomDB):
     conn = sqlite3.connect(nomDB)
     cur = conn.cursor()
     print("Welcome to your password manager!")
-    choisirOption(conn, cur)
+    mainMenu(conn, cur)
 
 
-def menu():
+def afficherOptionMainMenu():
     print("-" * 15)
     print("1. Create account\n"
           "2. Sign in\n"
@@ -50,7 +51,7 @@ def menu():
     print("-" * 15)
 
 
-def menuPw():
+def afficherOptionsPassword():
     print("-" * 15)
     print("Choose an option:")
     print("1. Add a new password\n"
@@ -64,6 +65,7 @@ def menuPw():
 def createUser(cur, conn):
     exists = 1
     while exists != 0:
+        system("cls")
         usrn = input("Please create a username or enter 'quit' to exit: ")
         if usrn == "quit":
             sys.exit()
@@ -86,6 +88,7 @@ def createUser(cur, conn):
 def signIn(cur, conn):
     exists = 0
     while exists != 1:
+        system("cls")
         usrn = input("Please enter your username or enter 'quit' to exit: ")
         if usrn == "quit":
             sys.exit()
@@ -94,11 +97,9 @@ def signIn(cur, conn):
         exists = cur.fetchone()[0]
         if exists == 0:
             changeMind = input("This user does not exist, if you want to create an new account please enter 'create'"
-                               "or 'quit' to exit\n")
+                               "or press enter to try again to exit\n")
             if changeMind == "create":
                 createUser(cur, conn)
-            elif changeMind == "quit":
-                sys.exit()
 
     cur.execute('''SELECT pw, EncryptKey FROM users WHERE username == ? ''',
                 (usrn,))
@@ -120,28 +121,31 @@ def signIn(cur, conn):
     return encryptKey, user_id
 
 
-def choisirOption(conn, cur):
-    menu()
+def mainMenu(conn, cur):
+    system("cls")
+    afficherOptionMainMenu()
     choix = input()
     if choix == "1":
         encryptKey, user_id = createUser(cur, conn)
-        choisirQuoiFaire(user_id, encryptKey, conn, cur)
+        menuPassword(user_id, encryptKey, conn, cur)
     elif choix == "2":
         encryptKey, user_id = signIn(cur, conn)
-        choisirQuoiFaire(user_id, encryptKey, conn, cur)
+        menuPassword(user_id, encryptKey, conn, cur)
     elif choix == "3":
         cur.close()
         conn.close()
         exit()
     else:
         print("Please enter a valid option")
-        choisirOption(conn, cur)
+        mainMenu(conn, cur)
 
 
-def choisirQuoiFaire(user_id, key, conn, cur):
-    menuPw()
+def menuPassword(user_id, key, conn, cur):
+    system("cls")
+    afficherOptionsPassword()
     choix = input()
     if choix == "1":
+        system("cls")
         site = input("For what site do you want to create a password: ")
         site = site.lower().capitalize()
         name = input("What is the username used for this website: ")
@@ -176,11 +180,12 @@ def choisirQuoiFaire(user_id, key, conn, cur):
             sleep(2)
 
     elif choix == "2":
+        system("cls")
         listUsers, site = getWebsites(cur, user_id, "What site do you want to get the password to?\n")
         if listUsers is None:
             print("There are no passwords yet")
             sleep(2.5)
-            choisirQuoiFaire(user_id, key, conn, cur)
+            menuPassword(user_id, key, conn, cur)
         print("Website: " + site)
         print("Username: Password")
         index = 1
@@ -205,11 +210,12 @@ def choisirQuoiFaire(user_id, key, conn, cur):
                 pass
 
     elif choix == "3":
+        system("cls")
         listUsers, site = getWebsites(cur, user_id, "From what website do you want to delete a password?\n")
         if listUsers is None:
             print("There are no passwords to delete")
             sleep(2)
-            choisirQuoiFaire(user_id, key, conn, cur)
+            menuPassword(user_id, key, conn, cur)
         nbUsers = len(listUsers)
         print("Website: " + site)
         index = 1
@@ -224,23 +230,27 @@ def choisirQuoiFaire(user_id, key, conn, cur):
         else:
             if 0 < doCopy <= nbUsers:
                 confirm = input("Are you sure? Y/N\n")
-                if confirm == "Y":
-                    username = listUsers[doCopy-1][0]
-                    cur.execute('''DELETE FROM endpass WHERE user_id == ? AND site == ? AND username == ?''',
-                                (user_id, site, username))
-                    conn.commit()
-                    print("Your password has been successfully deleted!")
-                    sleep(2.5)
-                elif confirm == "N":
-                    pass
+                while True:
+                    if confirm == "Y":
+                        username = listUsers[doCopy - 1][0]
+                        cur.execute('''DELETE FROM endpass WHERE user_id == ? AND site == ? AND username == ?''',
+                                    (user_id, site, username))
+                        conn.commit()
+                        print("Your password has been successfully deleted!")
+                        sleep(2.5)
+                        break
+                    elif confirm == "N":
+                        break
+                    else:
+                        confirm = input("Please enter Y or N\n")
     elif choix == "4":
-        choisirOption(conn, cur)
+        mainMenu(conn, cur)
     elif choix == "5":
         sys.exit()
     else:
         print("Please enter a valid option")
         sleep(2)
-    choisirQuoiFaire(user_id, key, conn, cur)
+    menuPassword(user_id, key, conn, cur)
 
 
 def getWebsites(cur, user_id, request):
