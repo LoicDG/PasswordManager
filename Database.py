@@ -56,7 +56,8 @@ def menuPw():
     print("1. Add a new password\n"
           "2. Get an existing password\n"
           "3. Delete a password\n"
-          "4. Quit")
+          "4. Go back to the login menu\n"
+          "5. Quit")
     print("-" * 15)
 
 
@@ -233,6 +234,8 @@ def choisirQuoiFaire(user_id, key, conn, cur):
                 elif confirm == "N":
                     pass
     elif choix == "4":
+        choisirOption(conn, cur)
+    elif choix == "5":
         sys.exit()
     else:
         print("Please enter a valid option")
