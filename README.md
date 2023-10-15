@@ -12,7 +12,7 @@
     call venv\Scripts\activate
     python MainCLI.py "PwManager.db"
 
-  assurez vous d'avoir python 3.7+ d'installé et un d'utiliser un virtual environment
+  assurez vous d'avoir python 3.7+ d'installé et d'utiliser un virtual environment
   
   voici le lien du site officiel de Python: https://www.python.org/
 
