@@ -1,11 +1,11 @@
 import sqlite3
-import sys
 import PwEncryption
+import sys
+import maskpass
+
 from pyperclip import copy as ctrlc
 from PwHashing import hash_pass
-
 from cryptography.fernet import Fernet
-from sys import exit
 from time import sleep
 from os import system
 
@@ -75,7 +75,7 @@ def createUser(cur, conn):
         if exists == 1:
             print("This user already exists")
             sleep(2)
-    pw = input("Please create your master password: ")
+    pw = enterPw("Please enter your master password: ")
     pw = hash_pass(pw.encode())
     key = Fernet.generate_key()
     cur.execute('''INSERT INTO users (username, pw, EncryptKey) VALUES (?, ?, ?) 
@@ -102,14 +102,13 @@ def signIn(cur, conn):
             if changeMind == "create":
                 return createUser(cur, conn)
 
-
     cur.execute('''SELECT pw, EncryptKey FROM users WHERE username == ? ''',
                 (usrn,))
     pw, encryptKey = cur.fetchmany(1)[0]
     password = ""
     tries = 0
     while password != pw and tries < 3:
-        password = input("Enter your password: ")
+        password = maskpass.askpass(prompt="Enter your password: ", mask="*")
         password = hash_pass(password.encode())
         if password != pw:
             if tries < 2:
@@ -124,7 +123,6 @@ def signIn(cur, conn):
 
 
 def mainMenu(conn, cur):
-    system("cls")
     afficherOptionMainMenu()
     choix = input()
     if choix == "1":
@@ -139,6 +137,8 @@ def mainMenu(conn, cur):
         exit()
     else:
         print("Please enter a valid option")
+        sleep(2)
+        system("cls")
         mainMenu(conn, cur)
 
 
@@ -160,7 +160,7 @@ def menuPassword(user_id, key, conn, cur):
                           "do you want to change it?\nY/N >>")
             while yesNo != "Y" or yesNo != "N":
                 if yesNo == "Y":
-                    newPw = input("Please enter your new password: ")
+                    newPw = enterPw("Please enter your new password: ")
                     newPw = PwEncryption.encrypt(key, newPw)
                     cur.execute('''UPDATE endpass SET password == ? WHERE 
                     user_id == ? AND username == ? AND site ==?''', (newPw, user_id, name, site))
@@ -173,7 +173,7 @@ def menuPassword(user_id, key, conn, cur):
                 else:
                     print("Please type Y or N to confirm your choice")
         else:
-            pw = input("Please enter a password for this website: ")
+            pw = enterPw("Please enter a password for this website: ")
             pw = PwEncryption.encrypt(key, pw)
             cur.execute('''INSERT INTO endpass (user_id, site, username, password) VALUES(?,?,?,?)''',
                         (user_id, site, name, pw))
@@ -247,6 +247,7 @@ def menuPassword(user_id, key, conn, cur):
                     else:
                         confirm = input("Please enter Y or N\n")
     elif choix == "4":
+        system("cls")
         mainMenu(conn, cur)
     elif choix == "5":
         sys.exit()
@@ -288,3 +289,15 @@ def getWebsites(cur, user_id, request):
                     sleep(2)
     cur.execute("SELECT username, password FROM endpass WHERE site == ? AND user_id == ?", (site, user_id))
     return cur.fetchall(), site
+
+
+def enterPw(prompt):
+    pw = ""
+    pwconfirm = "0"
+    while pw != pwconfirm:
+        pw = maskpass.askpass(prompt=prompt, mask="*")
+        pwconfirm = maskpass.askpass(prompt="Please confirm your password: ", mask="*")
+        if pw != pwconfirm:
+            print("Your passwords do not match, please try again")
+            sleep(1.5)
+    return pw
