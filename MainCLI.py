@@ -1,3 +1,5 @@
+from CheckLib import installLibs
+installLibs()
 from Database import launch
 import argparse
 
