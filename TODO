@@ -1,3 +1,8 @@
-#TODO
+TODO to finish
   -Do GUI
   -Encrypt encrypt key with master password
+TODO to expand (not in a particular order)
+  -Set up a server
+  -Add password recovery
+  -Make it into an actual app (not a batch file)
+  -Android application? 👀
