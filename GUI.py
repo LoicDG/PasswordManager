@@ -33,7 +33,7 @@ class GUI:
         titre.pack()
 
     def create_master_account(self, user, pw):
-        print("Account creation worked!", user, pw) #TODO: To remove
+        print("Account creation worked!", user, pw)
         createAccount(user, pw)
 
     def create_main_menu(self):
