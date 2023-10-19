@@ -60,7 +60,7 @@ def createUser(nouveauUsername, nouveauMasterPassword):
 
     curseur.close()
 
-def signIn(givenUsername, givenMasterPassword): #TODO: Chui rendue ici
+def signIn(givenUsername, givenMasterPassword):
     curseur = connection.cursor()
 
     query = "SELECT password, salt FROM users WHERE username == ?"
