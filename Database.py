@@ -5,10 +5,9 @@ import maskpass
 
 from pyperclip import copy as ctrlc
 from PwHashing import hash_pass
-from cryptography.fernet import Fernet
 from time import sleep
-from os import system
-
+from os import system, urandom
+import base64
 
 def launch(nomDB):
     creerDatabase(nomDB)
@@ -22,7 +21,7 @@ def creerDatabase(nomDB):
                     user_id INTEGER PRIMARY KEY, 
                     username TEXT, 
                     pw TEXT, 
-                    EncryptKey TEXT)''')
+                    salt TEXT)''')
     conn.commit()
     cur.execute('''CREATE TABLE IF NOT EXISTS endpass (
                     password_id INTEGER PRIMARY KEY,
@@ -76,10 +75,11 @@ def createUser(cur, conn):
             print("This user already exists")
             sleep(2)
     pw = enterPw("Please enter your master password: ")
-    pw = hash_pass(pw.encode())
-    key = Fernet.generate_key()
-    cur.execute('''INSERT INTO users (username, pw, EncryptKey) VALUES (?, ?, ?) 
-                                ''', (usrn, pw, key))
+    salt = base64.urlsafe_b64encode(urandom(16)).decode()
+    pw = hash_pass(pw.encode(), salt.encode())
+    key = PwEncryption.generateKey(pw, salt)
+    cur.execute('''INSERT INTO users (username, pw, salt) VALUES (?, ?, ?) 
+                                ''', (usrn, pw, salt))
     conn.commit()
     cur.execute('''SELECT user_id FROM users WHERE username == ?''', (usrn,))
     user_id = cur.fetchone()[0]
@@ -102,14 +102,14 @@ def signIn(cur, conn):
             if changeMind == "create":
                 return createUser(cur, conn)
 
-    cur.execute('''SELECT pw, EncryptKey FROM users WHERE username == ? ''',
+    cur.execute('''SELECT pw, salt FROM users WHERE username == ? ''',
                 (usrn,))
-    pw, encryptKey = cur.fetchmany(1)[0]
+    pw, salt = cur.fetchmany(1)[0]
     password = ""
     tries = 0
     while password != pw and tries < 3:
         password = maskpass.askpass(prompt="Enter your password: ", mask="*")
-        password = hash_pass(password.encode())
+        password = hash_pass(password.encode(), salt.encode())
         if password != pw:
             if tries < 2:
                 print("Password incorrect, please try again")
@@ -119,6 +119,7 @@ def signIn(cur, conn):
         sys.exit()
     cur.execute('''SELECT user_id FROM users WHERE username == ?''', (usrn,))
     user_id = cur.fetchone()[0]
+    encryptKey = PwEncryption.generateKey(pw, salt)
     return encryptKey, user_id
 
 

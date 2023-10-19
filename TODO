@@ -1,0 +1,10 @@
+TODO to finish
+  -Do GUI
+  -Add password hiding + show button
+  -Learn and (if needed) modify the connection to DB, is it good if the conn is kept open when the app runs
+    or is it better if we close it and only open it when a query is made
+TODO to expand (not in a particular order)
+  -Set up a server
+  -Add password recovery
+  -Make it into an actual app (not a batch file)
+  -Android application? 👀

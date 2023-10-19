@@ -14,7 +14,7 @@ def check_dependency(library_name):
 
 def installLibs():
     # List of libraries to check
-    libraries_to_check = ["cryptography", "pyperclip", "maskpass"]
+    libraries_to_check = ["cryptography", "pyperclip", "maskpass", "passlib", "argon2-cffi"]
 
     missing_libraries = [lib for lib in libraries_to_check if not check_dependency(lib)]
 
@@ -23,7 +23,10 @@ def installLibs():
         print("Installing missing libraries...")
 
         for library in missing_libraries:
-            subprocess.run(["pip", "install", library])
+            if library == "argon2-cffi":
+                subprocess.run(["pip", "install", library, "--ignore-installed"])
+            else:
+                subprocess.run(["pip", "install", library])
 
         print("Libraries installed.")
         sleep(2)
