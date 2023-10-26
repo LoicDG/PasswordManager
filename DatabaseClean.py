@@ -10,76 +10,79 @@ from os import system, urandom
 import base64
 
 nomDB = "DatabaseBB"
-connection = sqlite3.connect(nomDB)
+conn = sqlite3.connect(nomDB)
+
+
 def launch():
     creerDatabase()
 
+
 def creerDatabase():
-    curseur = connection.cursor()
+    cur = conn.cursor()
     # Créer le tableau "user"
-    curseur.execute('''CREATE TABLE IF NOT EXISTS users (
+    cur.execute('''CREATE TABLE IF NOT EXISTS users (
                     userID INTEGER PRIMARY KEY, 
                     username TEXT, 
                     masterPassword TEXT, 
                     salt TEXT)''')
-    connection.commit()
+    conn.commit()
     # Créer le tableau "endpass"
-    curseur.execute('''CREATE TABLE IF NOT EXISTS endpass (
+    cur.execute('''CREATE TABLE IF NOT EXISTS endpass (
                     passwordID INTEGER PRIMARY KEY,
                     userID INTEGER,
                     site TEXT,
                     username TEXT,
                     password TEXT,
                     FOREIGN KEY (userID) REFERENCES users (userID))''')
-    connection.commit()
-    curseur.close()
+    conn.commit()
+    cur.close()
 
 
-def addNewUserToTable(curseur, nouveauUsername, nouveauMasterPassword):
+def addNewUserToTable(cur, nouveauUsername, nouveauMasterPassword):
     salt = base64.urlsafe_b64encode(urandom(16)).decode()
     hashedMasterPassword = hash_pass(nouveauMasterPassword.encode(), salt.encode())
 
-    query= "INSERT INT users (username, masterPassword, salt) VALUES (?, ?, ?)"
-    curseur.execute(query, (nouveauUsername, hashedMasterPassword, salt))
-    connection.commit()
+    query = "INSERT INTO users (username, masterPassword, salt) VALUES (?, ?, ?)"
+    cur.execute(query, (nouveauUsername, hashedMasterPassword, salt))
+    conn.commit()
 
-    curseur.close()
+    cur.close()
+
 
 def createUser(nouveauUsername, nouveauMasterPassword):
-    curseur = connection.cursor()
+    cur = conn.cursor()
 
     query = "SELECT * FROM users WHERE username = ?"
-    curseur.execute(query, (nouveauUsername,))
+    cur.execute(query, (nouveauUsername,))
 
     # fetchone() retourne une rangée si le username exist, sinon elle va retournée "None"
-    resultat = curseur.fetchone()
+    resultat = cur.fetchone()
     if resultat is None:
-        addNewUserToTable(curseur, nouveauUsername, nouveauMasterPassword)
+        addNewUserToTable(cur, nouveauUsername, nouveauMasterPassword)
     else:
         pass
 
-    curseur.close()
+    cur.close()
+
 
 def signIn(givenUsername, givenMasterPassword):
-    curseur = connection.cursor()
+    cur = conn.cursor()
 
     query = "SELECT password, salt FROM users WHERE username == ?"
-    curseur.execute(query, (givenUsername,))
+    cur.execute(query, (givenUsername,))
 
     passwordDB = ""
     saltDB = ""
 
-    resultat = curseur.fetchone()
+    resultat = cur.fetchone()
     if resultat is None:
         pass
     else:
-        passwordDB, salt = curseur.fetchmany(1)[0]
+        passwordDB, salt = cur.fetchmany(1)[0]
 
     cur.execute('''SELECT pw, salt FROM users WHERE username == ? ''',
                 (usrn,))
     pw, salt = cur.fetchmany(1)[0]
-
-
 
     cur.execute('''SELECT user_id FROM users WHERE username == ?''', (usrn,))
     user_id = cur.fetchone()[0]
@@ -88,24 +91,24 @@ def signIn(givenUsername, givenMasterPassword):
 
 
 def mainMenu():
-    cur = connection.cursor()
+    cur = conn.cursor()
     afficherOptionMainMenu()
     choix = input()
     if choix == "1":
-        encryptKey, user_id = createUser(cur, connection)
-        menuPassword(user_id, encryptKey, connection, cur)
+        encryptKey, user_id = createUser(cur, conn)
+        menuPassword(user_id, encryptKey, conn, cur)
     elif choix == "2":
-        encryptKey, user_id = signIn(cur, connection)
-        menuPassword(user_id, encryptKey, connection, cur)
+        encryptKey, user_id = signIn(cur, conn)
+        menuPassword(user_id, encryptKey, conn, cur)
     elif choix == "3":
         cur.close()
-        connection.close()
+        conn.close()
         exit()
     else:
         print("Please enter a valid option")
         sleep(2)
         system("cls")
-        mainMenu(connection, cur)
+        mainMenu(conn, cur)
 
 
 def menuPassword(user_id, key, conn, cur):
