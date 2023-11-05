@@ -6,6 +6,7 @@ launch()
 # region --- CONSTANTS ---
 bgColour = "#1c1b1c"
 fgColour = "#97afe8"
+red = "#d1192b"
 windowDimensions = "420x600"
 # endregion
 
@@ -21,30 +22,143 @@ titleLabel = Label(
     font=("Arial", 15, "bold"),
     fg=fgColour,
     bg=bgColour,
-    padx=10,
-    pady=10
 )
-titleLabel.pack()
+titleLabel.pack(padx=10, pady=10)
 # endregion
-
 
 # region --- DEFINING EVENTS ---
-def switchToAccueil(oldFrame):
-    frameAccueil.pack(fill="both", expand=1)
+def switchFrames(oldFrame, newFrame):
+    newFrame.pack(fill="both", expand="1")
     oldFrame.forget()
-def switchTo2(oldFrame):
-    frame2.pack(fill="both", expand=1)
-    oldFrame.forget()
+def submitSignIn(currentFrame, username, password):
+    # erreur aura une valeur si et seulement s'il y a une erreur
+    erreur = createUser(username, password)
 
-def submitMasters():
-    username = masterUsernameEntry.get()
-    print("Works", username)
-    switchTo2(frame1)
+    if erreur is not None:
+        errorMsg = Label(
+            currentFrame,
+            text=erreur,
+            fg=red,
+        )
+        errorMsg.pack()
+
+def submitLogIn(currentFrame, username, password):
+    erreur = logIn(username, password)
+
+    if erreur is not None:
+        errorMsg = Label(
+            currentFrame,
+            text=erreur,
+            fg=red,
+        )
+        errorMsg.pack()
 
 # endregion
 
-# region --- FRAME ACCUEIL ---
-# - defining the frame -
+# region --- FRAME: SIGN IN---
+frameSignIn = Frame(
+    window,
+    bg=bgColour
+)
+
+# - defining the widgets -
+titleMasterUsernameSignIn = Label(
+    frameSignIn,
+    text="Master Username",
+    font=("Arial", 10),
+    fg=fgColour,
+    bg=bgColour
+)
+
+masterUsernameEntrySignIn = Entry(
+    frameSignIn,
+    font=("Arial", 10),
+)
+
+titleMasterPasswordSignIn = Label(
+    frameSignIn,
+    text="Master Password",
+    font=("Arial", 10),
+    fg=fgColour,
+    bg=bgColour
+)
+
+masterPasswordEntrySignIn = Entry(
+    frameSignIn,
+    font=("Arial", 10)
+)
+masterPasswordEntrySignIn.config(show="*")
+
+spaceSignIn = Label(
+    frameSignIn,
+    bg=bgColour,
+)
+
+submitButtonSignIn = Button(
+    frameSignIn,
+    text="Submit",
+    font=("Arial", 10),
+    command=lambda: submitSignIn(frameSignIn, masterUsernameEntrySignIn.get(), masterPasswordEntrySignIn.get())
+)
+
+# - showing widgets -
+titleMasterUsernameSignIn.pack(padx=5, pady=5)
+masterUsernameEntrySignIn.pack(padx=5, pady=5)
+titleMasterPasswordSignIn.pack(padx=5, pady=5)
+masterPasswordEntrySignIn.pack(padx=5, pady=5)
+submitButtonSignIn.pack(padx=5, pady=5)
+# endregion
+
+# region --- FRAME: LOG IN ---
+frameLogIn = Frame(
+    window,
+    bg=bgColour
+)
+
+# - defining the widgets -
+titleMasterUsernameLogIn = Label(
+    frameLogIn,
+    text="Master Username",
+    font=("Arial", 10),
+    fg=fgColour,
+    bg=bgColour,
+)
+
+masterUsernameEntryLogIn = Entry(
+    frameLogIn,
+    font=("Arial", 10)
+)
+
+titleMasterPasswordLogIn = Label(
+    frameLogIn,
+    text="Master Password",
+    font=("Arial", 10),
+    fg=fgColour,
+    bg=bgColour
+)
+
+masterPasswordEntryLogIn = Entry(
+    frameLogIn,
+    font=("Arial", 10)
+)
+masterPasswordEntryLogIn.config(show="*")
+
+submitButtonLogIn = Button(
+    frameLogIn,
+    text="Submit",
+    font=("Arial", 10),
+    command=lambda: submitLogIn(frameLogIn, masterUsernameEntrySignIn.get(), masterPasswordEntrySignIn.get())
+)
+
+# - showing widgets -
+titleMasterUsernameLogIn.pack(padx=5, pady=5)
+masterUsernameEntryLogIn.pack(padx=5, pady=5)
+titleMasterPasswordLogIn.pack(padx=5, pady=5)
+masterPasswordEntryLogIn.pack(padx=5, pady=5)
+submitButtonLogIn.pack(padx=5, pady=5)
+# endregion
+
+# region --- FRAME: ACCUEIL ---
 frameAccueil = Frame(
     window,
     bg=bgColour
@@ -52,105 +166,23 @@ frameAccueil = Frame(
 
 # - defining the widgets -
 signInButton = Button(
-    frame1,
-    text="Submit",
+    frameAccueil,
+    text="Sign In",
     font=("Arial", 10),
-    command=submitMasters
+    command=lambda: switchFrames(frameAccueil, frameSignIn)
 )
 
 logInButton = Button(
-    frame1,
-    text="Submit",
+    frameAccueil,
+    text="Log In",
     font=("Arial", 10),
-    command=submitMasters
+    command=lambda: switchFrames(frameAccueil, frameLogIn)
 )
 
 # - showing widgets -
-frameAccueil.pack(fill="both", expand="1")
 signInButton.pack()
 logInButton.pack()
 # endregion
 
-
-# region --- FRAME#1: MASTER USER & PASS ---
-# - defining the frame -
-frame1 = Frame(
-    window,
-    bg=bgColour
-)
-
-# - defining the widgets -
-
-titleMasterUsername = Label(
-    frame1,
-    text="Master Username",
-    font=("Arial", 10),
-    fg=fgColour,
-    bg=bgColour,
-    padx=10,
-    pady=10
-)
-
-masterUsernameEntry = Entry(
-    frame1,
-    font=("Arial", 10),
-)
-
-titleMasterPassword = Label(
-    frame1,
-    text="Master Password",
-    font=("Arial", 10),
-    fg=fgColour,
-    bg=bgColour,
-    padx=10,
-    pady=10
-)
-
-masterPasswordEntry = Entry(
-    frame1,
-    font=("Arial", 10)
-)
-masterPasswordEntry.config(show="*")
-
-space1 = Label(
-    frame1,
-    bg=bgColour,
-    padx=10,
-    pady=5
-)
-
-submitButton = Button(
-    frame1,
-    text="Submit",
-    font=("Arial", 10),
-    command=submitMasters
-)
-
-# - showing widgets -
-titleMasterUsername.pack()
-masterUsernameEntry.pack()
-titleMasterPassword.pack()
-masterPasswordEntry.pack()
-space1.pack()
-submitButton.pack()
-# endregion
-
-# region --- FRAME#2:  ---
-# - defining the frame -
-frame2 = Frame(
-    window,
-    bg=bgColour
-)
-
-# - defining the widgets -
-
-# - showing widgets -
-
-# endregion
-
-
-# region --- FRAME#3: ---
-
-# endregion
-
+frameAccueil.pack(fill="both", expand="1")
 window.mainloop()

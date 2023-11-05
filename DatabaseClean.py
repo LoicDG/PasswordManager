@@ -5,12 +5,12 @@ from os import urandom
 import base64
 
 nomDB = "DatabaseBB"
-connection = sqlite3.connect(nomDB)
 
 def launch():
     creerDatabase()
 
 def creerDatabase():
+    connection = sqlite3.connect(nomDB)
     curseur = connection.cursor()
     # Créer le tableau "user"
     curseur.execute('''CREATE TABLE IF NOT EXISTS users (
@@ -32,17 +32,20 @@ def creerDatabase():
 
 
 def addNewUserToTable(nouveauUsername, nouveauMasterPassword):
+    connection = sqlite3.connect(nomDB)
     curseur = connection.cursor()
     salt = base64.urlsafe_b64encode(urandom(16)).decode()
     hashedMasterPassword = hash_pass(nouveauMasterPassword.encode(), salt.encode())
 
-    query = "INSERT INT users (username, masterPassword, salt) VALUES (?, ?, ?)"
+    query = "INSERT INTO users (username, masterPassword, salt) VALUES (?, ?, ?)"
     curseur.execute(query, (nouveauUsername, hashedMasterPassword, salt))
     connection.commit()
+    print("execution worked!") #TODO: Test
 
     curseur.close()
 
 def createUser(nouveauUsername, nouveauMasterPassword):
+    connection = sqlite3.connect(nomDB)
     curseur = connection.cursor()
     query = "SELECT * FROM users WHERE username = ?"
     curseur.execute(query, (nouveauUsername,))
@@ -50,9 +53,43 @@ def createUser(nouveauUsername, nouveauMasterPassword):
     # fetchone() retourne une rangée si le username exist, sinon elle va retournée "None"
     resultat = curseur.fetchone()
     if resultat is None:
-        addNewUserToTable(curseur, nouveauUsername, nouveauMasterPassword)
+        addNewUserToTable(nouveauUsername, nouveauMasterPassword)
     else:
-        pass
+        return "That username is already taken!"
+    curseur.close()
+
+def checkPasswordMatch(salt, storedPassword, givenPassword):
+    hashedPassword = hash_pass(givenPassword.encode(), salt.encode())
+    if (hashedPassword != storedPassword):
+        return False
+
+
+#TODO: Chui rendu icite :OP
+def logIn(givenUsername, givenPassword):
+    connection = sqlite3.connect(nomDB)
+    curseur = connection.cursor()
+
+    #Finding the info base on the username
+    query = "SELECT masterPassword, salt FROM users WHERE username == ?"
+    curseur.execute(query,(givenUsername,))
+
+    #If the username given doesn't exist:
+    resultat = curseur.fetchone()
+    if resultat is None:
+        return "This user doesn't exist!"
+
+    #All of the following code executes if the user does exist
+    hashedMasterPassword, salt = curseur.fetchmany(1)[0]
+
+    #Seeing if the password matches
+    count = 0
+    while ((checkPasswordMatch(salt, hashedMasterPassword, givenPassword) == False) & (count < 3)):
+        count+=1
+
+
+
+    # fetchone() retourne une rangée si le username exist, sinon elle va retournée "None"
+
 
     curseur.close()
 
