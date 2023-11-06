@@ -34,8 +34,12 @@ def creerDatabase():
 def addNewUserToTable(nouveauUsername, nouveauMasterPassword, confirmPW):
     connection = sqlite3.connect(nomDB)
     curseur = connection.cursor()
-    if confirmPW != nouveauMasterPassword:
+    if confirmPW != nouveauMasterPassword and nouveauMasterPassword.strip() and confirmPW.strip():
         return "The passwords do not match"
+    elif not nouveauMasterPassword.strip():
+        return "Please enter a password"
+    elif not confirmPW.strip():
+        return "Please confirm your password"
     salt = base64.urlsafe_b64encode(urandom(16)).decode()
     hashedMasterPassword = hash_pass(nouveauMasterPassword.encode(), salt.encode())
 
