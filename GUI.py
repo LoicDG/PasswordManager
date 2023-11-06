@@ -7,7 +7,7 @@ launch()
 bgColour = "#1c1b1c"
 fgColour = "#97afe8"
 red = "#d1192b"
-windowDimensions = "420x600"
+windowDimensions = "420x500"
 # endregion
 
 # region --- WINDOW SETUP ---
@@ -123,6 +123,8 @@ titleMasterUsernameSignIn.pack(padx=5, pady=5)
 masterUsernameEntrySignIn.pack(padx=5, pady=5)
 titleMasterPasswordSignIn.pack(padx=5, pady=5)
 masterPasswordEntrySignIn.pack(padx=5, pady=5)
+titleMasterPasswordConfirm.pack(padx=5, pady=5)
+masterPasswordEntrySignInConfirm.pack(padx=5, pady=5)
 submitButtonSignIn.pack(padx=5, pady=5)
 # endregion
 
@@ -172,8 +174,6 @@ titleMasterUsernameLogIn.pack(padx=5, pady=5)
 masterUsernameEntryLogIn.pack(padx=5, pady=5)
 titleMasterPasswordLogIn.pack(padx=5, pady=5)
 masterPasswordEntryLogIn.pack(padx=5, pady=5)
-titleMasterPasswordConfirm.pack(padx=5, pady=5)
-masterPasswordEntrySignInConfirm.pack(padx=5, pady=5)
 submitButtonLogIn.pack(padx=5, pady=5)
 # endregion
 
