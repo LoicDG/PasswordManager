@@ -31,9 +31,11 @@ def creerDatabase():
     curseur.close()
 
 
-def addNewUserToTable(nouveauUsername, nouveauMasterPassword):
+def addNewUserToTable(nouveauUsername, nouveauMasterPassword, confirmPW):
     connection = sqlite3.connect(nomDB)
     curseur = connection.cursor()
+    if confirmPW != nouveauMasterPassword:
+        return "The passwords do not match"
     salt = base64.urlsafe_b64encode(urandom(16)).decode()
     hashedMasterPassword = hash_pass(nouveauMasterPassword.encode(), salt.encode())
 
@@ -44,7 +46,7 @@ def addNewUserToTable(nouveauUsername, nouveauMasterPassword):
 
     curseur.close()
 
-def createUser(nouveauUsername, nouveauMasterPassword):
+def createUser(nouveauUsername, nouveauMasterPassword, confirmPW):
     connection = sqlite3.connect(nomDB)
     curseur = connection.cursor()
     query = "SELECT * FROM users WHERE username = ?"
@@ -53,7 +55,8 @@ def createUser(nouveauUsername, nouveauMasterPassword):
     # fetchone() retourne une rangée si le username exist, sinon elle va retournée "None"
     resultat = curseur.fetchone()
     if resultat is None:
-        addNewUserToTable(nouveauUsername, nouveauMasterPassword)
+        error = addNewUserToTable(nouveauUsername, nouveauMasterPassword, confirmPW)
+        if error is not None: return error
     else:
         return "That username is already taken!"
     curseur.close()

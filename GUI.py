@@ -30,9 +30,9 @@ titleLabel.pack(padx=10, pady=10)
 def switchFrames(oldFrame, newFrame):
     newFrame.pack(fill="both", expand="1")
     oldFrame.forget()
-def submitSignIn(currentFrame, username, password):
+def submitSignIn(currentFrame, username, password, confirmPW):
     # erreur aura une valeur si et seulement s'il y a une erreur
-    erreur = createUser(username, password)
+    erreur = createUser(username, password, confirmPW)
 
     if erreur is not None:
         errorMsg = Label(
@@ -41,6 +41,10 @@ def submitSignIn(currentFrame, username, password):
             fg=red,
         )
         errorMsg.pack()
+        if erreur == "The passwords do not match":
+            masterPasswordEntrySignIn.delete(0, "end")
+            masterPasswordEntrySignInConfirm.delete(0, "end")
+            masterPasswordEntrySignIn.focus_force()
 
 def submitLogIn(currentFrame, username, password):
     erreur = logIn(username, password)
@@ -87,7 +91,19 @@ masterPasswordEntrySignIn = Entry(
     frameSignIn,
     font=("Arial", 10)
 )
+titleMasterPasswordConfirm = Label(
+    frameSignIn,
+    text="Confirm your password",
+    font=("Arial", 10),
+    fg=fgColour,
+    bg=bgColour
+)
 masterPasswordEntrySignIn.config(show="*")
+masterPasswordEntrySignInConfirm = Entry(
+    frameSignIn,
+    font=("Arial", 10)
+)
+masterPasswordEntrySignInConfirm.config(show="*")
 
 spaceSignIn = Label(
     frameSignIn,
@@ -98,7 +114,8 @@ submitButtonSignIn = Button(
     frameSignIn,
     text="Submit",
     font=("Arial", 10),
-    command=lambda: submitSignIn(frameSignIn, masterUsernameEntrySignIn.get(), masterPasswordEntrySignIn.get())
+    command=lambda: submitSignIn(frameSignIn, masterUsernameEntrySignIn.get(), masterPasswordEntrySignIn.get(),
+                                 masterPasswordEntrySignInConfirm.get())
 )
 
 # - showing widgets -
@@ -155,6 +172,8 @@ titleMasterUsernameLogIn.pack(padx=5, pady=5)
 masterUsernameEntryLogIn.pack(padx=5, pady=5)
 titleMasterPasswordLogIn.pack(padx=5, pady=5)
 masterPasswordEntryLogIn.pack(padx=5, pady=5)
+titleMasterPasswordConfirm.pack(padx=5, pady=5)
+masterPasswordEntrySignInConfirm.pack(padx=5, pady=5)
 submitButtonLogIn.pack(padx=5, pady=5)
 # endregion
 
