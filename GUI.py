@@ -117,6 +117,20 @@ submitButtonSignIn = Button(
     command=lambda: submitSignIn(frameSignIn, masterUsernameEntrySignIn.get(), masterPasswordEntrySignIn.get(),
                                  masterPasswordEntrySignInConfirm.get())
 )
+def on_key_press(event):
+    key = event.keysym
+    if key == "Return":
+        focus = window.focus_get()
+        if focus is masterUsernameEntrySignIn:
+            masterPasswordEntrySignIn.focus_force()
+        elif focus is masterPasswordEntrySignIn:
+            masterPasswordEntrySignInConfirm.focus_force()
+        elif focus is masterPasswordEntrySignInConfirm:
+            submitSignIn(frameSignIn, masterUsernameEntrySignIn.get(), masterPasswordEntrySignIn.get(),
+                         masterPasswordEntrySignInConfirm.get())
+
+window.bind("<Key>", on_key_press)
+
 
 # - showing widgets -
 titleMasterUsernameSignIn.pack(padx=5, pady=5)
