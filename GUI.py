@@ -1,4 +1,5 @@
 from tkinter import *
+from DatabaseClean import logIn as lin
 from DatabaseClean import *
 
 launch()
@@ -26,6 +27,8 @@ titleLabel = Label(
     bg=bgColour,
 )
 titleLabel.pack(padx=10, pady=10)
+
+
 # endregion
 
 # region --- DEFINING EVENTS ---
@@ -39,6 +42,8 @@ def switchFrames(oldFrame, newFrame):
     elif newFrame is frameLogIn:
         logIn = True
         signIn = False
+
+
 def submitSignIn(currentFrame, username, password, confirmPW):
     # erreur aura une valeur si et seulement s'il y a une erreur
     erreur = createUser(username, password, confirmPW)
@@ -55,8 +60,9 @@ def submitSignIn(currentFrame, username, password, confirmPW):
             masterPasswordEntrySignInConfirm.delete(0, "end")
             masterPasswordEntrySignIn.focus_force()
 
+
 def submitLogIn(currentFrame, username, password):
-    erreur = logIn(username, password)
+    erreur = lin(username, password)
 
     if erreur is not None:
         errorMsg = Label(
@@ -65,6 +71,7 @@ def submitLogIn(currentFrame, username, password):
             fg=red,
         )
         errorMsg.pack()
+
 
 # endregion
 
@@ -126,6 +133,8 @@ submitButtonSignIn = Button(
     command=lambda: submitSignIn(frameSignIn, masterUsernameEntrySignIn.get(), masterPasswordEntrySignIn.get(),
                                  masterPasswordEntrySignInConfirm.get())
 )
+
+
 def on_key_press(event):
     key = event.keysym
     if key == "Return":
@@ -147,8 +156,8 @@ def getFocus(focus, username, password, isSignIn, passwordConfirm):
     elif passwordConfirm is not None and focus is passwordConfirm:
         submitSignIn(frameSignIn, username.get(), password.get(), passwordConfirm.get())
 
-window.bind("<Key>", on_key_press)
 
+window.bind("<Key>", on_key_press)
 
 # - showing widgets -
 titleMasterUsernameSignIn.pack(padx=5, pady=5)
