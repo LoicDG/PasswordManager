@@ -15,6 +15,8 @@ window = Tk()
 window.geometry(windowDimensions)
 window.title("Bloc Buddies Password Manager")
 window.config(background=bgColour)
+global signIn
+global logIn
 
 titleLabel = Label(
     window,
@@ -30,6 +32,13 @@ titleLabel.pack(padx=10, pady=10)
 def switchFrames(oldFrame, newFrame):
     newFrame.pack(fill="both", expand="1")
     oldFrame.forget()
+    global signIn, logIn
+    if newFrame is frameSignIn:
+        signIn = True
+        logIn = False
+    elif newFrame is frameLogIn:
+        logIn = True
+        signIn = False
 def submitSignIn(currentFrame, username, password, confirmPW):
     # erreur aura une valeur si et seulement s'il y a une erreur
     erreur = createUser(username, password, confirmPW)
@@ -121,13 +130,22 @@ def on_key_press(event):
     key = event.keysym
     if key == "Return":
         focus = window.focus_get()
-        if focus is masterUsernameEntrySignIn:
-            masterPasswordEntrySignIn.focus_force()
-        elif focus is masterPasswordEntrySignIn:
-            masterPasswordEntrySignInConfirm.focus_force()
-        elif focus is masterPasswordEntrySignInConfirm:
-            submitSignIn(frameSignIn, masterUsernameEntrySignIn.get(), masterPasswordEntrySignIn.get(),
-                         masterPasswordEntrySignInConfirm.get())
+        if signIn:
+            getFocus(focus, masterUsernameEntrySignIn, masterPasswordEntrySignIn,
+                     True, masterPasswordEntrySignInConfirm)
+        elif logIn:
+            getFocus(focus, masterUsernameEntryLogIn, masterPasswordEntryLogIn, False, None)
+
+
+def getFocus(focus, username, password, isSignIn, passwordConfirm):
+    if focus is username:
+        password.focus_force()
+    elif focus is password and isSignIn:
+        passwordConfirm.focus_force()
+    elif focus is password and not isSignIn:
+        submitLogIn(frameLogIn, username.get(), password.get())
+    elif passwordConfirm is not None and focus is passwordConfirm:
+        submitSignIn(frameSignIn, username.get(), password.get(), passwordConfirm.get())
 
 window.bind("<Key>", on_key_press)
 
