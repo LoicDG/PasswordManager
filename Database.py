@@ -148,105 +148,13 @@ def menuPassword(user_id, key, conn, cur):
     afficherOptionsPassword()
     choix = input()
     if choix == "1":
-        system("cls")
-        site = input("For what site do you want to create a password: ")
-        site = site.lower().capitalize()
-        name = input("What is the username used for this website: ")
-
-        cur.execute('''SELECT EXISTS(SELECT * FROM endpass WHERE user_id == ? AND username == ? AND site ==?)''',
-                    (user_id, name, site))
-        exists = cur.fetchone()[0]
-        if exists == 1:
-            yesNo = input("A password exists already for this site and this username, "
-                          "do you want to change it?\nY/N >>")
-            while yesNo != "Y" or yesNo != "N":
-                if yesNo == "Y":
-                    newPw = enterPw("Please enter your new password: ")
-                    newPw = PwEncryption.encrypt(key, newPw)
-                    cur.execute('''UPDATE endpass SET password == ? WHERE 
-                    user_id == ? AND username == ? AND site ==?''', (newPw, user_id, name, site))
-                    conn.commit()
-                    print("Your password has been updated!")
-                    sleep(2)
-                    break
-                elif yesNo == "N":
-                    break
-                else:
-                    print("Please type Y or N to confirm your choice")
-        else:
-            pw = enterPw("Please enter a password for this website: ")
-            pw = PwEncryption.encrypt(key, pw)
-            cur.execute('''INSERT INTO endpass (user_id, site, username, password) VALUES(?,?,?,?)''',
-                        (user_id, site, name, pw))
-            conn.commit()
-            print("Your password has been saved!")
-            sleep(2)
+        addPassword(conn, cur, key, user_id)
 
     elif choix == "2":
-        system("cls")
-        listUsers, site = getWebsites(cur, user_id, "What site do you want to get the password to?\n")
-        if listUsers is None:
-            print("There are no passwords yet")
-            sleep(2.5)
-            menuPassword(user_id, key, conn, cur)
-        print("Website: " + site)
-        print("Username: Password")
-        index = 1
-        nbUsers = len(listUsers)
-        for entry in range(len(listUsers)):
-            listUsers[entry] = list(listUsers[entry])
-            listUsers[entry][1] = PwEncryption.decrypt(key, listUsers[entry][1])
-            print(str(index) + ". " + listUsers[entry][0] + ": " + listUsers[entry][1])
-            index = index + 1
-        doCopy = input("If you want to copy a password to your clipboard enter the corresponding number, or press "
-                       "enter to continue\n")
-        try:
-            doCopy = int(doCopy)
-        except ValueError:
-            pass
-        else:
-            if 0 < doCopy <= nbUsers:
-                ctrlc(str(listUsers[doCopy - 1][1]))
-                print("The password has been copied to your clipboard!")
-                sleep(2.5)
-            else:
-                pass
+        getPassword(conn, cur, key, user_id)
 
     elif choix == "3":
-        system("cls")
-        listUsers, site = getWebsites(cur, user_id, "From what website do you want to delete a password?\n")
-        if listUsers is None:
-            print("There are no passwords to delete")
-            sleep(2)
-            menuPassword(user_id, key, conn, cur)
-        nbUsers = len(listUsers)
-        print("Website: " + site)
-        index = 1
-        print("Users:")
-        for i in listUsers:
-            print(str(index) + ". " + i[0])
-            index = index + 1
-        doCopy = input("Select the user you want to delete, or press enter to continue\n")
-        try:
-            doCopy = int(doCopy)
-        except ValueError:
-            pass
-        else:
-            if 0 < doCopy <= nbUsers:
-                confirm = input("Are you sure? Y/N\n")
-                while True:
-                    if confirm == "Y":
-                        username = listUsers[doCopy - 1][0]
-                        cur.execute('''DELETE FROM endpass WHERE user_id == ? AND site == ? AND username == ?''',
-                                    (user_id, site, username))
-                        conn.commit()
-                        print("Your password has been successfully deleted!")
-                        sleep(2.5)
-                        break
-                    elif confirm == "N":
-                        break
-                    else:
-                        confirm = input("Please enter Y or N\n")
+        deletePassword(conn, cur, key, user_id)
     elif choix == "4":
         system("cls")
         mainMenu(conn, cur)
@@ -256,6 +164,119 @@ def menuPassword(user_id, key, conn, cur):
         print("Please enter a valid option")
         sleep(2)
     menuPassword(user_id, key, conn, cur)
+
+
+def deletePassword(conn, cur, key, user_id):
+    system("cls")
+    listUsers, site = getWebsites(cur, user_id, "From what website do you want to delete a password?\n")
+    if listUsers is None:
+        print("There are no passwords to delete")
+        sleep(2)
+        menuPassword(user_id, key, conn, cur)
+    nbUsers = len(listUsers)
+    print("Website: " + site)
+    index = 1
+    print("Users:")
+    for i in listUsers:
+        print(str(index) + ". " + i[0])
+        index = index + 1
+    doCopy = input("Select the user you want to delete, or press enter to continue\n")
+    try:
+        doCopy = int(doCopy)
+    except ValueError:
+        pass
+    else:
+        if 0 < doCopy <= nbUsers:
+            confirm = input("Are you sure? Y/N\n")
+            while True:
+                if confirm == "Y":
+                    username = listUsers[doCopy - 1][0]
+                    cur.execute('''DELETE FROM endpass WHERE user_id == ? AND site == ? AND username == ?''',
+                                (user_id, site, username))
+                    conn.commit()
+                    print("Your password has been successfully deleted!")
+                    sleep(2.5)
+                    break
+                elif confirm == "N":
+                    break
+                else:
+                    confirm = input("Please enter Y or N\n")
+
+
+def getPassword(conn, cur, key, user_id):
+    system("cls")
+    listUsers, site = getWebsites(cur, user_id, "What site do you want to get the password to?\n")
+    if listUsers is None:
+        print("There are no passwords yet")
+        sleep(2.5)
+        menuPassword(user_id, key, conn, cur)
+    doCopy, nbUsers = showPasswordScreen(key, listUsers, site, True)
+    try:
+        doCopy = int(doCopy)
+    except ValueError:
+        if doCopy == "s":
+            system("cls")
+            showPasswordScreen(key, listUsers, site, False)
+    else:
+        if 0 < doCopy <= nbUsers:
+            ctrlc(str(listUsers[doCopy - 1][1]))
+            print("The password has been copied to your clipboard!")
+            sleep(2.5)
+        else:
+            pass
+
+
+def addPassword(conn, cur, key, user_id):
+    system("cls")
+    site = input("For what site do you want to create a password: ")
+    site = site.lower().capitalize()
+    name = input("What is the username used for this website: ")
+    cur.execute('''SELECT EXISTS(SELECT * FROM endpass WHERE user_id == ? AND username == ? AND site ==?)''',
+                (user_id, name, site))
+    exists = cur.fetchone()[0]
+    if exists == 1:
+        yesNo = input("A password exists already for this site and this username, "
+                      "do you want to change it?\nY/N >>")
+        while yesNo != "Y" or yesNo != "N":
+            if yesNo == "Y":
+                newPw = enterPw("Please enter your new password: ")
+                newPw = PwEncryption.encrypt(key, newPw)
+                cur.execute('''UPDATE endpass SET password == ? WHERE 
+                    user_id == ? AND username == ? AND site ==?''', (newPw, user_id, name, site))
+                conn.commit()
+                print("Your password has been updated!")
+                sleep(2)
+                break
+            elif yesNo == "N":
+                break
+            else:
+                print("Please type Y or N to confirm your choice")
+    else:
+        pw = enterPw("Please enter a password for this website: ")
+        pw = PwEncryption.encrypt(key, pw)
+        cur.execute('''INSERT INTO endpass (user_id, site, username, password) VALUES(?,?,?,?)''',
+                    (user_id, site, name, pw))
+        conn.commit()
+        print("Your password has been saved!")
+        sleep(2)
+
+
+def showPasswordScreen(key, listUsers, site, s):
+    print("Website: " + site)
+    print("Username: Password")
+    print("Enter s to show your passwords")
+    index = 1
+    nbUsers = len(listUsers)
+    for entry in range(len(listUsers)):
+        listUsers[entry] = list(listUsers[entry])
+        if s:
+            listUsers[entry][1] = PwEncryption.decrypt(key, listUsers[entry][1])
+        print(str(index) + ". " + listUsers[entry][0] + ": ", end="")
+        print("*" * len(listUsers[entry][1])) if s else print(str(listUsers[entry][1]))
+        index = index + 1
+    doCopy = input("If you want to copy a password to your clipboard enter the corresponding number, or press "
+                   "enter to continue\n")
+    return doCopy, nbUsers
 
 
 def getWebsites(cur, user_id, request):
