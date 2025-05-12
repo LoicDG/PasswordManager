@@ -1,15 +1,15 @@
-from CheckLib import installLibs
-installLibs()
+#from CheckLib import installLibs
+#installLibs()
 from Database import launch
 import argparse
 
 
 def main():
-    parser = argparse.ArgumentParser(description= "Password Manager Application")
-    parser.add_argument("database", help= "path to the database file")
-    args = parser.parse_args()
-    launch(args.database)
-
+#    parser = argparse.ArgumentParser(description= "Password Manager Application")
+ #   parser.add_argument("database", help= "path to the database file")
+  #  args = parser.parse_args()
+   # launch(args.database)
+    launch(".DB.db")
 
 if __name__ == "__main__":
     main()

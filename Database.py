@@ -9,6 +9,8 @@ from time import sleep
 from os import system, urandom
 import base64
 
+clearScreen = "clear" if sys.platform == "linux" else "cls"
+
 def launch(nomDB):
     creerDatabase(nomDB)
     connect(nomDB)
@@ -64,7 +66,7 @@ def afficherOptionsPassword():
 def createUser(cur, conn):
     exists = 1
     while exists != 0:
-        system("cls")
+        system(clearScreen)
         usrn = input("Please create a username or enter 'quit' to exit: ")
         if usrn == "quit":
             sys.exit()
@@ -89,7 +91,7 @@ def createUser(cur, conn):
 def signIn(cur, conn):
     exists = 0
     while exists != 1:
-        system("cls")
+        system(clearScreen)
         usrn = input("Please enter your username or enter 'quit' to exit: ")
         if usrn == "quit":
             sys.exit()
@@ -135,16 +137,16 @@ def mainMenu(conn, cur):
     elif choix == "3":
         cur.close()
         conn.close()
-        exit()
+        sys.exit(0)
     else:
         print("Please enter a valid option")
         sleep(2)
-        system("cls")
+        system(clearScreen)
         mainMenu(conn, cur)
 
 
 def menuPassword(user_id, key, conn, cur):
-    system("cls")
+    system(clearScreen)
     afficherOptionsPassword()
     choix = input()
     if choix == "1":
@@ -156,7 +158,7 @@ def menuPassword(user_id, key, conn, cur):
     elif choix == "3":
         deletePassword(conn, cur, key, user_id)
     elif choix == "4":
-        system("cls")
+        system(clearScreen)
         mainMenu(conn, cur)
     elif choix == "5":
         sys.exit()
@@ -167,7 +169,7 @@ def menuPassword(user_id, key, conn, cur):
 
 
 def deletePassword(conn, cur, key, user_id):
-    system("cls")
+    system(clearScreen)
     listUsers, site = getWebsites(cur, user_id, "From what website do you want to delete a password?\n")
     if listUsers is None:
         print("There are no passwords to delete")
@@ -204,7 +206,7 @@ def deletePassword(conn, cur, key, user_id):
 
 
 def getPassword(conn, cur, key, user_id):
-    system("cls")
+    system(clearScreen)
     listUsers, site = getWebsites(cur, user_id, "What site do you want to get the password to?\n")
     if listUsers is None:
         print("There are no passwords yet")
@@ -215,7 +217,7 @@ def getPassword(conn, cur, key, user_id):
         doCopy = int(doCopy)
     except ValueError:
         if doCopy == "s":
-            system("cls")
+            system(clearScreen)
             showPasswordScreen(key, listUsers, site, False)
     else:
         if 0 < doCopy <= nbUsers:
@@ -227,7 +229,7 @@ def getPassword(conn, cur, key, user_id):
 
 
 def addPassword(conn, cur, key, user_id):
-    system("cls")
+    system(clearScreen)
     site = input("For what site do you want to create a password: ")
     site = site.lower().capitalize()
     name = input("What is the username used for this website: ")
