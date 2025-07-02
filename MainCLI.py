@@ -4,6 +4,7 @@ from Database import launch
 import platform
 from pathlib import Path
 import os
+import sys
 
 
 def main():
@@ -19,4 +20,7 @@ def main():
     launch(str(db))
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit()

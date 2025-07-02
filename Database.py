@@ -75,7 +75,7 @@ def createUser(cur, conn):
         exists = cur.fetchone()[0]
         if exists == 1:
             print("This user already exists")
-            sleep(2)
+            sleep(1)
     pw = enterPw("Please enter your master password: ")
     salt = base64.urlsafe_b64encode(urandom(16)).decode()
     pw = hash_pass(pw.encode(), salt.encode())
@@ -140,7 +140,7 @@ def mainMenu(conn, cur):
         sys.exit(0)
     else:
         print("Please enter a valid option")
-        sleep(2)
+        sleep(1)
         system(clearScreen)
         mainMenu(conn, cur)
 
@@ -164,7 +164,7 @@ def menuPassword(user_id, key, conn, cur):
         sys.exit()
     else:
         print("Please enter a valid option")
-        sleep(2)
+        sleep(1)
     menuPassword(user_id, key, conn, cur)
 
 
@@ -173,7 +173,7 @@ def deletePassword(conn, cur, key, user_id):
     listUsers, site = getWebsites(cur, user_id, "From what website do you want to delete a password?\n")
     if listUsers is None:
         print("There are no passwords to delete")
-        sleep(2)
+        sleep(1)
         menuPassword(user_id, key, conn, cur)
     nbUsers = len(listUsers)
     print("Website: " + site)
@@ -197,7 +197,7 @@ def deletePassword(conn, cur, key, user_id):
                                 (user_id, site, username))
                     conn.commit()
                     print("Your password has been successfully deleted!")
-                    sleep(2.5)
+                    sleep(1.2)
                     break
                 elif confirm == "N":
                     break
@@ -210,7 +210,7 @@ def getPassword(conn, cur, key, user_id):
     listUsers, site = getWebsites(cur, user_id, "What site do you want to get the password to?\n")
     if listUsers is None:
         print("There are no passwords yet")
-        sleep(2.5)
+        sleep(1.2)
         menuPassword(user_id, key, conn, cur)
     doCopy, nbUsers = showPasswordScreen(key, listUsers, site, True)
     try:
@@ -223,7 +223,7 @@ def getPassword(conn, cur, key, user_id):
         if 0 < doCopy <= nbUsers:
             ctrlc(str(listUsers[doCopy - 1][1]))
             print("The password has been copied to your clipboard!")
-            sleep(2.5)
+            sleep(1.2)
         else:
             pass
 
@@ -247,7 +247,7 @@ def addPassword(conn, cur, key, user_id):
                     user_id == ? AND username == ? AND site ==?''', (newPw, user_id, name, site))
                 conn.commit()
                 print("Your password has been updated!")
-                sleep(2)
+                sleep(1)
                 break
             elif yesNo == "N":
                 break
@@ -260,7 +260,7 @@ def addPassword(conn, cur, key, user_id):
                     (user_id, site, name, pw))
         conn.commit()
         print("Your password has been saved!")
-        sleep(2)
+        sleep(1)
 
 
 def showPasswordScreen(key, listUsers, site, s):
@@ -303,14 +303,14 @@ def getWebsites(cur, user_id, request):
                 site = int(site)
             except ValueError:
                 print("Please enter a number between 1 and " + str(nbSites))
-                sleep(2)
+                sleep(1)
             else:
                 if 0 < site <= nbSites:
                     site = listSites[site - 1][0]
                     number = True
                 else:
                     print("Please enter a number between 1 and " + str(nbSites))
-                    sleep(2)
+                    sleep(1)
     cur.execute("SELECT username, password FROM endpass WHERE site == ? AND user_id == ?", (site, user_id))
     return cur.fetchall(), site
 
@@ -323,5 +323,5 @@ def enterPw(prompt):
         pwconfirm = maskpass.askpass(prompt="Please confirm your password: ", mask="*")
         if pw != pwconfirm:
             print("Your passwords do not match, please try again")
-            sleep(1.5)
+            sleep(1)
     return pw
