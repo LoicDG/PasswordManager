@@ -9,7 +9,7 @@ from time import sleep
 from os import system, urandom
 import base64
 
-clearScreen = "clear" if sys.platform == "linux" else "cls"
+clearScreen = "clear" if sys.platform in ("linux", "darwin") else "cls"
 
 def launch(nomDB):
     creerDatabase(nomDB)

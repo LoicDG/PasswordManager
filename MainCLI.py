@@ -8,7 +8,7 @@ import sys
 
 
 def main():
-    if platform == "Windows":
+    if platform.system() == "Windows":
         home_dir = Path(os.environ.get('APPDATA', Path.home() / 'AppData' / 'Roaming'))
     else:
         home_dir = Path.home()
