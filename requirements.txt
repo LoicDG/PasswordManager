@@ -1,7 +1,7 @@
 argon2-cffi==23.1.0
 argon2-cffi-bindings==21.2.0
 cffi==1.17.1
-cryptography==44.0.3
+cryptography==50.0.0
 maskpass==0.3.7
 passlib==1.7.4
 pycparser==2.22
